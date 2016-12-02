@@ -1,0 +1,8 @@
+# IntelliJ Idea project files
+.idea
+*.iml
+*.ipr
+*.jar
+
+# Always ignore these directories/files
+target
