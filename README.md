@@ -11,3 +11,5 @@
 2. Method BufferedInputStream has inner buffer that can't be completely filled (I guess there's not enough time to fill it - need to more investigation)
 
 3. It's meaningless to make bufferSize > INTEGER.MAX_VALUE (need to fix it)
+
+4. Verify if downloadable file has already exist (need to fix it)
