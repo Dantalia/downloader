@@ -113,7 +113,7 @@ public class HttpDownloader extends Downloader {
                 // write data
                 int numRead;
                 byte data[] = new byte[bufferSize];
-                while ((numRead = in.read(data, 0, bufferSize)) != -1) {
+                while ((numRead = readFully(in, data, 0, bufferSize)) != 0) {
                     tokenBucket.consume(bufferSize);
                     startByte += numRead;
                     raf.write(data, 0, numRead);
@@ -135,5 +135,21 @@ public class HttpDownloader extends Downloader {
 
             return startByte - startPosition;
         }
+    }
+
+    // since bufferInputStream can't completely fill inside buffer, this method helps to fill it fully and then write to file
+    // cause of this method, can avoid situation when bufferInputStream read 1,2,3..bytes
+    public final int readFully(InputStream in, byte b[], int off, int len) throws IOException {
+        if (len < 0)
+            throw new IndexOutOfBoundsException();
+        int n = 0;
+        while (n < len) {
+            int count = in.read(b, off + n, len - n);
+            if (count < 0) {
+                return n;
+            }
+            n += count;
+        }
+        return n;
     }
 }
