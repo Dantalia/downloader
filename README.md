@@ -13,3 +13,5 @@
 3. It's meaningless to make bufferSize > INTEGER.MAX_VALUE (need to fix it)
 
 4. Verify if downloadable file has already exist (need to fix it)
+
+5. May be it's better to user channels for file instead of RAF (investigate it)
