@@ -88,8 +88,6 @@ public class HttpDownloader extends Downloader {
             // this variable is initialized for calculation how many bytes were downloaded
             int startPosition = startByte;
 
-            BufferedInputStream in = null;
-            RandomAccessFile raf = null;
             try {
                 HttpURLConnection connection = (HttpURLConnection) url.openConnection();
 
@@ -104,33 +102,24 @@ public class HttpDownloader extends Downloader {
                     throw new RuntimeException("Invalid response from server");
                 }
 
-                in = new BufferedInputStream(connection.getInputStream());
+                try (BufferedInputStream in = new BufferedInputStream(connection.getInputStream());
+                     RandomAccessFile raf = new RandomAccessFile(destinationFolder + File.separator + outputFile, "rw");) {
+                    // seek for a start position
+                    raf.seek(startByte);
 
-                // open file and seek for a start position
-                raf = new RandomAccessFile(destinationFolder + File.separator + outputFile, "rw");
-                raf.seek(startByte);
-
-                // write data
-                int numRead;
-                byte data[] = new byte[bufferSize];
-                while ((numRead = readFully(in, data, 0, bufferSize)) != 0) {
-                    tokenBucket.consume(bufferSize);
-                    startByte += numRead;
-                    raf.write(data, 0, numRead);
+                    // write data
+                    int numRead;
+                    byte data[] = new byte[bufferSize];
+                    while ((numRead = readFully(in, data, 0, bufferSize)) != 0) {
+                        tokenBucket.consume(bufferSize);
+                        startByte += numRead;
+                        raf.write(data, 0, numRead);
+                    }
+                } catch (IOException e) {
+                    throw new RuntimeException("I/O exception inside thread");
                 }
             } catch (IOException e) {
-                throw new RuntimeException("I/O exception inside thread");
-            } finally {
-                if (in != null) {
-                    try {
-                        in.close();
-                    } catch (IOException e) {}
-                }
-                if (raf != null) {
-                    try {
-                        raf.close();
-                    } catch (IOException e) {}
-                }
+                throw new RuntimeException("I/O exception inside thread (URL connection problem)");
             }
 
             return startByte - startPosition;
