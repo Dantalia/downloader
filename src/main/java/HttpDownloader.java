@@ -87,9 +87,9 @@ public class HttpDownloader extends Downloader {
         public Integer call() {
             // this variable is initialized for calculation how many bytes were downloaded
             int startPosition = startByte;
-
+            HttpURLConnection connection = null;
             try {
-                HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+                 connection = (HttpURLConnection) url.openConnection();
 
                 // set download range of bytes
                 String rangeBytes = startByte + "-" + endByte;
@@ -120,6 +120,10 @@ public class HttpDownloader extends Downloader {
                 }
             } catch (IOException e) {
                 throw new RuntimeException("I/O exception inside thread (URL connection problem)");
+            } finally {
+                if (connection != null) {
+                    connection.disconnect();
+                }
             }
 
             return startByte - startPosition;
